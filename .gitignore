@@ -1,0 +1,6 @@
+/dist/
+/.idea/
+/package-lock.json
+/node_modules/
+/logs/
+*.js
