@@ -3,7 +3,7 @@ import { mapValues } from 'lodash'
 import { keys } from 'lodash'
 import Options from './options'
 import * as pgPromise from 'pg-promise';
-import { TableDefinition, Database } from './schemaInterfaces'
+import {TableDefinition, Database, SchemaDefinition} from './schemaInterfaces'
 
 const pgp = pgPromise();
 
@@ -13,6 +13,8 @@ export class PostgresDatabase implements Database {
     constructor (public connectionString: string) {
         this.db = pgp(connectionString)
     }
+
+
 
     private static mapTableDefinitionToType (tableDefinition: TableDefinition, customTypes: string[], options: Options): TableDefinition {
         return mapValues(tableDefinition, column => {
@@ -134,12 +136,69 @@ export class PostgresDatabase implements Database {
         return tableDefinition
     }
 
+    public async myGetTableDefinition (tableName: string, tableSchema: string) {
+        let tableDefinition: TableDefinition = {}
+        type T = { column_name: string, udt_name: string, is_nullable: string, column_comment: string }
+        await this.db.each<T>(
+            'SELECT  cols.column_name,' +
+            '       cols.udt_name,' +
+            '       cols.is_nullable, ' +
+            'pgd.description as column_comment ' +
+            'FROM information_schema.columns cols ' +
+            '  LEFT JOIN' +
+            '     pg_catalog.pg_description pgd ON pgd.objsubid = cols.ordinal_position' +
+            '         AND pgd.objoid = (SELECT c.oid' +
+            '                           FROM pg_catalog.pg_class c' +
+            '                           WHERE c.relname = cols.table_name)'+
+            'WHERE table_name = $1 and table_schema = $2',
+            [tableName, tableSchema],
+            (schemaItem: T) => {
+                tableDefinition[schemaItem.column_name] = {
+                    udtName: schemaItem.udt_name,
+                    nullable: schemaItem.is_nullable === 'YES',
+                    columnComment: schemaItem.column_comment
+                }
+            })
+        return tableDefinition
+    }
+
     public async getTableTypes (tableName: string, tableSchema: string, options: Options) {
         let enumTypes = await this.getEnumTypes()
         let customTypes = keys(enumTypes)
         return PostgresDatabase.mapTableDefinitionToType(await this.getTableDefinition(tableName, tableSchema), customTypes, options)
     }
 
+    public async myGetTableTypes (tableName: string, tableSchema: string, options: Options) {
+        let enumTypes = await this.getEnumTypes()
+        let customTypes = keys(enumTypes)
+        return PostgresDatabase.mapTableDefinitionToType(await this.myGetTableDefinition(tableName, tableSchema), customTypes, options)
+    }
+
+    public async myGetTableComments(tables: string[]): Promise<SchemaDefinition> {
+        const schemaDefinition: SchemaDefinition = {};
+
+        const tableComments = await this.db.map<{ table_comment: string, relname: string }>(
+            `SELECT c.relname, d.description AS table_comment
+         FROM pg_description d
+         JOIN pg_class c ON d.objoid = c.oid
+         WHERE c.relkind = 'r'
+         AND d.objsubid = 0
+         AND c.relname = ANY($1);`,
+            [tables],
+            (tableInfo: { relname: string, table_comment: string }) => tableInfo
+        );
+
+        tableComments.forEach((item) => {
+            schemaDefinition[item.relname] = {
+                tableProperties: {
+                    tableComment: item.table_comment
+                },
+                tableDefinition: {}
+            };
+        });
+
+        return schemaDefinition;
+    }
     public async getSchemaTables (schemaName: string): Promise<string[]> {
         return await this.db.map<string>(
             'SELECT table_name ' +

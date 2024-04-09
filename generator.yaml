@@ -1,13 +1,10 @@
 postgres:
-  user: devuser
-  host: dev.anmed.com.cn
-  database: dev_db_aoss
-  password: pwd4devuser
-  port: 2345
-  outputPath: D:\learn\output\interface.ts
-  tables:
-    - fdm_card
-    - fdm_card_content
-    - fdm_data_form
-    - fdm_data_form_content
-    - fdm_form_category
+  host: 127.0.0.1         #主机
+  database: postgre       #数据库
+  user: postgre           #用户
+  password: postgre       #密码
+  port: 2345              #端口
+  outputPath: flexForm.entities  #输出包路径
+  tables: # 表名列表
+    #- t_user
+    #- t_student

@@ -5,7 +5,7 @@
 
 import * as _ from 'lodash'
 
-import { TableDefinition } from './schemaInterfaces'
+import {SchemaDefinition, TableDefinition} from './schemaInterfaces'
 import Options from './options'
 
 function nameIsReservedKeyword (name: string): boolean {
@@ -39,17 +39,28 @@ function normalizeName (name: string, options: Options): string {
 *
 * */
 
-export function myGenerateTableInterface (tableNameRaw: string, tableDefinition: TableDefinition, options: Options) {
+export function myGenerateTableInterface (tableNameRaw: string, tableDefinition: TableDefinition, options: Options,schemaDefinition:SchemaDefinition) {
     const tableName = options.transformTypeName(tableNameRaw)
     let members = ''
     Object.keys(tableDefinition).map(c => {
         let type = tableDefinition[c].tsType
-        let nullable = tableDefinition[c].nullable ? '| null' : ''
-        let columnName = options.transformColumnName(c)
-        members += `${columnName}:${type}${nullable} ;\n`
+        //let nullable = tableDefinition[c].nullable ? '' : ''
+        let columnName = tableDefinition[c].nullable ? options.transformColumnName(c)+'?':options.transformColumnName(c)
+        let columnComment = tableDefinition[c].columnComment==null?'': `
+        /** 
+         * ${tableDefinition[c].columnComment} 
+         */ `
+        members += `
+        ${columnComment}
+        ${columnName}:${type} ;`
     })
 
+    let tableComment = schemaDefinition[tableNameRaw].tableProperties.tableComment==null?'':`
+    /** 
+    * ${schemaDefinition[tableNameRaw].tableProperties.tableComment}表
+    */`
     return `
+        ${tableComment}
         export default interface ${normalizeName(tableName, options)} {
         ${members}
         }
@@ -86,7 +97,8 @@ export function generateTableTypes (tableNameRaw: string, tableDefinition: Table
     let fields = ''
     Object.keys(tableDefinition).forEach((columnNameRaw) => {
         let type = tableDefinition[columnNameRaw].tsType
-        let nullable = tableDefinition[columnNameRaw].nullable ? '| null' : ''
+        //let nullable = tableDefinition[columnNameRaw].nullable ? '| null' : ''
+        let nullable = tableDefinition[columnNameRaw].nullable ? '' : ''
         const columnName = options.transformColumnName(columnNameRaw)
         fields += `export type ${normalizeName(columnName, options)} = ${type}${nullable};\n`
     })
