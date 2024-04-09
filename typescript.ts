@@ -46,7 +46,7 @@ export function myGenerateTableInterface (tableNameRaw: string, tableDefinition:
         let type = tableDefinition[c].tsType
         //let nullable = tableDefinition[c].nullable ? '' : ''
         let columnName = tableDefinition[c].nullable ? options.transformColumnName(c)+'?':options.transformColumnName(c)
-        let columnComment = tableDefinition[c].columnComment==null?'': `
+        let columnComment = tableDefinition[c].columnComment==null|| tableDefinition[c].columnComment== ''?'': `
         /** 
          * ${tableDefinition[c].columnComment} 
          */ `
@@ -55,16 +55,15 @@ export function myGenerateTableInterface (tableNameRaw: string, tableDefinition:
         ${columnName}:${type} ;`
     })
 
-    let tableComment = schemaDefinition[tableNameRaw].tableProperties.tableComment==null?'':`
+    let tableComment = schemaDefinition[tableNameRaw].tableProperties.tableComment==null
+    || schemaDefinition[tableNameRaw].tableProperties.tableComment==''?'':`
     /** 
-    * ${schemaDefinition[tableNameRaw].tableProperties.tableComment}表
+    * ${schemaDefinition[tableNameRaw].tableProperties.tableComment}
     */`
-    return `
-        ${tableComment}
+    return `${tableComment}
         export default interface ${normalizeName(tableName, options)} {
         ${members}
-        }
-    `
+        }`
 }
 
 export function generateTableInterface (tableNameRaw: string, tableDefinition: TableDefinition, options: Options) {
@@ -74,8 +73,8 @@ export function generateTableInterface (tableNameRaw: string, tableDefinition: T
         members += `${columnName}: ${tableName}Fields.${normalizeName(columnName, options)};\n`
     })
 
-    return `
-        export interface ${normalizeName(tableName, options)} {
+
+    return ` export interface ${normalizeName(tableName, options)} {
         ${members}
         }
     `

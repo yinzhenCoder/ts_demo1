@@ -177,24 +177,36 @@ export class PostgresDatabase implements Database {
     public async myGetTableComments(tables: string[]): Promise<SchemaDefinition> {
         const schemaDefinition: SchemaDefinition = {};
 
-        const tableComments = await this.db.map<{ table_comment: string, relname: string }>(
-            `SELECT c.relname, d.description AS table_comment
+        const tableComments = await this.db.map<{  relname: string,table_comment: string, }>(
+            `SELECT c.relname, 
+            NULLIF(d.description,'') AS table_comment
          FROM pg_description d
          JOIN pg_class c ON d.objoid = c.oid
          WHERE c.relkind = 'r'
          AND d.objsubid = 0
-         AND c.relname = ANY($1);`,
+         AND c.relname = ANY(array[$1]);`,
             [tables],
             (tableInfo: { relname: string, table_comment: string }) => tableInfo
         );
-
-        tableComments.forEach((item) => {
-            schemaDefinition[item.relname] = {
-                tableProperties: {
-                    tableComment: item.table_comment
-                },
-                tableDefinition: {}
-            };
+        //console.log("tableComments:"+tableComments);
+        tables.forEach((tableName) => {
+            const tableComment = tableComments.find((item) => item.relname === tableName);
+            if (tableComment) {
+                schemaDefinition[tableName] = {
+                    tableProperties: {
+                        tableComment: tableComment.table_comment
+                    },
+                    tableDefinition: {}
+                };
+            } else {
+                // 处理表注释为空的情况，可以设置默认值或者采取其他适当的处理方式
+                schemaDefinition[tableName] = {
+                    tableProperties: {
+                        tableComment: ''
+                    },
+                    tableDefinition: {}
+                };
+            }
         });
 
         return schemaDefinition;
