@@ -1,0 +1,123 @@
+/**
+* daoImplTemplate.hbs
+*/
+
+{{setGlobalVar "tableName" meta.tableProperties.tableName}}
+
+import {DBConnection, PaginationList} from "@ticatec/node-common-library";
+import {{ meta.tableProperties.tableName }} from "../../entities/{{ meta.tableProperties.tableName }}";
+import {{ meta.tableProperties.tableName }}DAO from "../{{ meta.tableProperties.tableName }}DAO";
+//生成SQL============================
+
+const SQL_FIND = `
+SELECT {{#each meta.tableDefinition}}
+    {{this.columnRawName}}{{#unless @last}}, {{/unless}}
+{{/each}}
+FROM {{ meta.tableProperties.tableRawName }}
+{{#each meta.tableDefinition}}
+    {{#if @first}}
+        WHERE {{this.columnRawName}} = $1
+    {{/if}}
+{{/each}}`
+
+
+const SQL_INSERT = `INSERT INTO {{ meta.tableProperties.tableRawName }}
+(
+{{#each meta.tableDefinition}}
+    {{this.columnRawName}}{{#unless @last}}, {{/unless}}
+{{/each}}
+)VALUES (
+{{#each meta.tableDefinition}}    ${{inc @index }}{{#unless @last}}, {{/unless}} {{/each}}
+)`
+
+
+const SQL_UPDATE = `
+UPDATE  {{ meta.tableProperties.tableRawName }}
+SET
+{{#each meta.tableDefinition}}
+    {{#if @index}}
+        {{this.columnRawName}} = ${{inc @index }} {{#unless @last}}, {{/unless}}
+    {{/if}}
+{{/each}}
+
+{{#each meta.tableDefinition}}
+    {{#if @first}}
+        WHERE {{this.columnRawName}} = $1
+    {{/if}}
+{{/each}}`
+
+
+const SQL_DELETE = `
+DELETE FROM {{ meta.tableProperties.tableRawName }}
+{{#each meta.tableDefinition}}
+    {{#if @first}}
+        WHERE {{this.columnRawName}} = $1
+    {{/if}}
+{{/each}}`
+
+//生成SQL============================
+
+
+export default class {{ meta.tableProperties.tableName }}DAOImpl implements {{ meta.tableProperties.tableName }}DAO {
+
+
+
+
+
+async createNew(conn: DBConnection, item: {{ meta.tableProperties.tableName }}): Promise<void> {
+    await conn.executeUpdate
+    (SQL_INSERT,
+    [
+    {{#each meta.tableDefinition}}
+        item.{{this.columnName}}{{#unless @last}}, {{/unless}}
+    {{/each}}
+    ]);
+    }
+
+    {{#each meta.tableDefinition}}
+        {{#if @first}}
+
+
+
+
+            async delete(conn: DBConnection,  {{this.columnName}}: string): Promise<void> {
+            await conn.executeUpdate(SQL_DELETE, [ {{this.columnName}}]);
+            }
+
+        {{/if}}
+    {{/each}}
+
+
+        async update(conn: DBConnection, item: {{ meta.tableProperties.tableName }}): Promise<void> {
+            await conn.executeUpdate(SQL_UPDATE, [
+            {{#each meta.tableDefinition}}
+                item.{{this.columnName}}{{#unless @last}}, {{/unless}}
+            {{/each}}
+            ]);
+            }
+
+
+
+
+
+        {{#each meta.tableDefinition}}
+            {{#if @first}}
+                async find(conn: DBConnection, {{this.columnName }}: string):
+            {{/if}}
+        {{/each}}
+        Promise<{{getGlobalVar "tableName" }}> {
+        return await conn.find(SQL_FIND, [
+        {{#each meta.tableDefinition}}
+            {{#if @first}}
+                {{this.columnName }}
+            {{/if}}
+        {{/each}}
+        ]);
+        }
+
+        async search(conn: DBConnection, criteria: any): Promise<PaginationList>
+            {
+            return Promise.resolve(undefined); }
+
+
+            }

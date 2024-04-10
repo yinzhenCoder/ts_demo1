@@ -1,5 +1,5 @@
 
-import { mapValues } from 'lodash'
+import {camelCase, mapValues, upperFirst} from 'lodash'
 import { keys } from 'lodash'
 import Options from './options'
 import * as pgPromise from 'pg-promise';
@@ -154,6 +154,8 @@ export class PostgresDatabase implements Database {
             [tableName, tableSchema],
             (schemaItem: T) => {
                 tableDefinition[schemaItem.column_name] = {
+                    columnName:upperFirst(camelCase(schemaItem.column_name)),
+                    columnRawName:schemaItem.column_name,
                     udtName: schemaItem.udt_name,
                     nullable: schemaItem.is_nullable === 'YES',
                     columnComment: schemaItem.column_comment
@@ -194,7 +196,9 @@ export class PostgresDatabase implements Database {
             if (tableComment) {
                 schemaDefinition[tableName] = {
                     tableProperties: {
-                        tableComment: tableComment.table_comment
+                        tableComment: tableComment.table_comment,
+                        tableName: upperFirst(camelCase(tableName)),
+                        tableRawName:tableName,
                     },
                     tableDefinition: {}
                 };
@@ -202,13 +206,15 @@ export class PostgresDatabase implements Database {
                 // 处理表注释为空的情况，可以设置默认值或者采取其他适当的处理方式
                 schemaDefinition[tableName] = {
                     tableProperties: {
-                        tableComment: ''
+                        tableComment: '',
+                        tableName: upperFirst(camelCase(tableName)),
+                        tableRawName:tableName,
                     },
                     tableDefinition: {}
                 };
             }
         });
-
+        console.log(JSON.stringify(schemaDefinition));
         return schemaDefinition;
     }
     public async getSchemaTables (schemaName: string): Promise<string[]> {

@@ -8,7 +8,8 @@ import {getDatabase, Database} from './schema'
 import Options, {CAMELCASE_OPTIONS, OptionValues} from './options'
 import {processString, Options as ITFOptions} from 'typescript-formatter'
 import * as fs from "fs";
-import {SchemaDefinition} from "./schemaInterfaces";
+import {SchemaDefinition, TableDefinition} from "./schemaInterfaces";
+import {generateFiles} from "../ts_demo1/src/templateGenerator";
 
 const pkgVersion = require('./package.json').version
 
@@ -75,10 +76,23 @@ export async function typescriptOfTable(db: Database | string,
     //自己的方法
     let myInterfaceFile = myGenerateTableInterface(table, tableTypes, options, schemaDefinition);
     await generateInterfaceFile(outputPath, table, myInterfaceFile);
+
+
+
+    await generateDao(table, tableTypes, options, schemaDefinition);
     interfaces += myInterfaceFile;
     return myInterfaceFile;
 }
+async function generateDao(table: string, tableTypes: TableDefinition, options: Options, schemaDefinition: SchemaDefinition) {
+        schemaDefinition[table].tableDefinition = tableTypes;
+        console.log("================打印数据实体=============")
+        console.log(JSON.stringify(schemaDefinition[table]));
+    generateFiles(schemaDefinition,table,"aaa")
 
+
+
+
+}
 async function generateInterfaceFile(outputPath: string, tableName: string, interfaceString: string) {
     function convertToCamelCase(name: string): string {
         return name.replace(/_([a-z])/g, (match, char) => char.toUpperCase());
@@ -145,6 +159,11 @@ async function generateInterfaceFile(outputPath: string, tableName: string, inte
 
     //fs.writeFileSync(fileName, interfaceString);
     console.log(`Interface file for table ${tableName} generated and saved to ${fileName}`+"\n");
+
+
+    //生成DAO Service Controller 代码
+
+    //Dao
 }
 
 

@@ -1,0 +1,57 @@
+The table name is: {{ meta.tableProperties.tableName }}
+
+The table name is: {{ meta.tableProperties.tableName }}
+
+
+const SQL_FIND = `
+SELECT {{#each meta.tableDefinition}}
+    {{this.columnRawName}}{{#unless @last}}, {{/unless}}
+{{/each}}
+FROM {{ meta.tableProperties.tableRawName }}
+{{#each meta.tableDefinition}}
+    {{#if @first}}
+        WHERE {{this.columnRawName}} = $1
+    {{/if}}
+{{/each}}`
+
+`
+
+
+//INSERT INTO sdd_patient (${SQL_FIELD}) VALUES ($1, $2, $3, $4, $5, $6, $7)
+
+const SQL_INSERT = `INSERT INTO {{ meta.tableProperties.tableRawName }}
+(
+{{#each meta.tableDefinition}}
+    {{this.columnRawName}}{{#unless @last}}, {{/unless}}
+{{/each}}
+)VALUES (
+{{#each meta.tableDefinition}}    ${{inc @index }}{{#unless @last}}, {{/unless}} {{/each}}
+)`
+
+
+const SQL_UPDATE = `
+UPDATE  {{ meta.tableProperties.tableRawName }}
+SET
+{{#each meta.tableDefinition}}
+    {{#if @index}}
+        {{this.columnRawName}} = ${{inc @index }} {{#unless @last}}, {{/unless}}
+    {{/if}}
+{{/each}}
+
+{{#each meta.tableDefinition}}
+    {{#if @first}}
+        WHERE {{this.columnRawName}} = $1
+    {{/if}}
+{{/each}}`
+
+//const SQL_DELETE = `delete from gl_action_form where tenant_code=$1 and action_code=$2`;
+
+const SQL_DELETE = `
+DELETE FROM {{ meta.tableProperties.tableRawName }}
+{{#each meta.tableDefinition}}
+    {{#if @first}}
+        WHERE {{this.columnRawName}} = $1
+    {{/if}}
+{{/each}}`
+
+

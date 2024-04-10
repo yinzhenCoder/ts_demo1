@@ -1,0 +1,63 @@
+/**
+* daoTemplate.hbs
+*/
+{{log meta}}
+{{  meta.tableProperties.tableName}}
+import {{ meta.tableProperties.tableName }} from "../entities/{{ meta.tableProperties.tableName }}";
+import {DBConnection,PaginationList} from "@ticatec/node-common-library";
+
+export default interface {{ meta.tableProperties.tableName }}DAO {
+
+
+     /**
+     *
+     * @param conn
+     * @param item
+     */
+    createNew(conn: DBConnection, item: {{ meta.tableProperties.tableName }}): Promise<void>;
+
+
+    /**
+    *
+    * @param conn
+    * @param criteria
+    */
+    {{#each meta.tableDefinition}}
+        {{#if @first}}
+
+            delete(conn: DBConnection,  {{this.columnName }}: string):
+        {{/if}}
+    {{/each}}Promise<void>;
+
+
+     /**
+     *
+     * @param conn
+     * @param item
+     */
+    update(conn: DBConnection, item: {{ meta.tableProperties.tableName }}): Promise<void>;
+
+
+            /**
+            *
+            * @param conn
+            * @param id
+            */
+            {{#each meta.tableDefinition}}
+                {{#if @first}}
+                    find(conn: DBConnection, {{this.columnName }}: string):
+
+                {{/if}}
+            {{/each}}
+            Promise<{{ meta.tableProperties.tableName }}>;
+
+
+    /**
+    *
+    * @param conn
+    * @param criteria
+    */
+    search(conn: DBConnection, criteria: any): Promise<PaginationList>;
+
+
+}

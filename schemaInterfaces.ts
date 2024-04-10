@@ -1,13 +1,17 @@
 import Options from './options'
 
 export interface ColumnDefinition {
+    columnName?: string,
+    columnRawName?:string,
     udtName: string,
     nullable: boolean,
     tsType?: string,
     columnComment?: string,
 }
 export interface TableProperties {
-    tableComment: string; // 表的注释
+    tableComment: string, // 表的注释
+    tableName?: string, //驼峰后表名
+    tableRawName?: string,
 }
 export interface TableDefinition {
     [columnName: string]: ColumnDefinition,
