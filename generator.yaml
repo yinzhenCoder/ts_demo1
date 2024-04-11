@@ -1,8 +1,8 @@
 postgres:
-  user: devuser
-  host: dev.anmed.com.cn
-  database: dev_db_aoss
-  password: pwd4devuser
+  user: 
+  host: 
+  database: 
+  password: 
   port: 2345
 
 output:
