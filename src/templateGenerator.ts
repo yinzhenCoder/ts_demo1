@@ -1,62 +1,76 @@
 import {SchemaDefinition} from "../schemaInterfaces";
 import {Options as ITFOptions} from "typescript-formatter/lib";
 import {processString} from "typescript-formatter";
+import {DirectoryPaths} from "../index";
 
 const Handlebars = require('handlebars');
 const fs = require('fs');
 const path = require('path');
 
 // 注册 Handlebars Helper 函数
-Handlebars.registerHelper('setGlobalVar', function(name:string, value:any) {
+Handlebars.registerHelper('setGlobalVar', function(name, value) {
     this[name] = value;
 });
 
-Handlebars.registerHelper('getGlobalVar', function(name:string) {
+// 注册 getGlobalVar helper 函数
+Handlebars.registerHelper('getGlobalVar', function(name) {
     return this[name];
 });
 
 Handlebars.registerHelper('inc', function(value) {
     return parseInt(value) + 1;
 });
-
 // 编译模板
-function compileTemplate(meta:SchemaDefinition, templatePath:string) {
+function compileTemplate(meta:any,table:string, templatePath:string) {
     // 读取模板文件
     const templateSource = fs.readFileSync(templatePath, 'utf8');
     const template = Handlebars.compile(templateSource);
 
     // 填充模板
-    return template({ meta });
+    return template({meta: meta[table]});
 }
+
+
+const tableDefinition = {
+    'c_name': { columnRawName:'c_name',columnName:'Cname',udtName: 'string', nullable: false, tsType: 'string', columnComment: '姓名' },
+    'c_age': {columnRawName:'c_age',columnName:'Cage', udtName: 'number', nullable: false, tsType: 'number', columnComment: '年龄' }
+};
+
+const meta1 = {
+    "patient": {
+        tableProperties: {
+            tableComment: "患者表",
+            tableName: "Patient",
+            tableRawName:"t_patient"
+        },
+        tableDefinition: tableDefinition
+    }
+};
+
+
 
 // 生成文件
 // 生成文件
-export function generateFiles(meta: SchemaDefinition, table: string,outputPath:string) {
+export async function generateFiles(meta: SchemaDefinition, table: string, directoryPaths: DirectoryPaths) {
     let data = meta[table];
-    console.log(JSON.stringify(meta));
+
+
     // 获取 tableName
     const tableName = meta[table].tableProperties.tableName;
 
-    // 准备输出目录
-    const fullOutputPath = path.resolve(__dirname, outputPath);
-    if (!fs.existsSync(fullOutputPath)) {
-        fs.mkdirSync(fullOutputPath, { recursive: true });
-        console.log("Directory created: \n" + fullOutputPath + "\n");
-    } else {
-        console.log("Directory already exists: \n" + fullOutputPath + "\n");
-    }
+
 
     // 生成 DAO 文件
-    const daoCode = compileTemplate({meta: meta[table]}, 'daoTemplate.hbs');
-    formatter(`${tableName}DAO.ts`,daoCode);
-    fs.writeFileSync(path.join(fullOutputPath, `${tableName}DAO.ts`), daoCode);
-    console.log("File saved successfully at: \n" + path.join(fullOutputPath, `${tableName}DAO.ts`) + "\n");
+    const daoCode = compileTemplate(meta,table, 'daoTemplate.hbs');
+    let formatterDao = await formatter(`${tableName}DAO.ts`,daoCode);
+    fs.writeFileSync(path.join(directoryPaths.daoPath, `${tableName}DAO.ts`), formatterDao);
+    console.log("File saved successfully at: \n" + path.join(directoryPaths.daoPath, `${tableName}DAO.ts`) + "\n");
 
     // 生成 DAO Impl 文件
-    const daoImplCode = compileTemplate({meta: meta[table]}, 'daoImplTemplate.hbs');
-    formatter(`${tableName}DAOImpl.ts`,daoImplCode);
-    fs.writeFileSync(path.join(fullOutputPath, `${tableName}DAOImpl.ts`), daoImplCode);
-    console.log("File saved successfully at: \n" + path.join(fullOutputPath, `${tableName}DAOImpl.ts`) + "\n");
+    const daoImplCode = compileTemplate(meta,table, 'daoImplTemplate.hbs');
+    let formatterDaoImpl = await formatter(`${tableName}DAOImpl.ts`,daoImplCode);
+    fs.writeFileSync(path.join(directoryPaths.daoImplPath, `${tableName}DAOImpl.ts`), formatterDaoImpl);
+    console.log("File saved successfully at: \n" + path.join(directoryPaths.daoImplPath, `${tableName}DAOImpl.ts`) + "\n");
 }
 async function formatter(fileName: string, output: string) {
     const formatterOption: ITFOptions = {

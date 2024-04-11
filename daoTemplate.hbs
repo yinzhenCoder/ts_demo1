@@ -2,19 +2,18 @@
 * daoTemplate.hbs
 */
 {{log meta}}
-{{  meta.tableProperties.tableName}}
 import {{ meta.tableProperties.tableName }} from "../entities/{{ meta.tableProperties.tableName }}";
 import {DBConnection,PaginationList} from "@ticatec/node-common-library";
 
 export default interface {{ meta.tableProperties.tableName }}DAO {
 
 
-     /**
-     *
-     * @param conn
-     * @param item
-     */
-    createNew(conn: DBConnection, item: {{ meta.tableProperties.tableName }}): Promise<void>;
+/**
+*
+* @param conn
+* @param item
+*/
+createNew(conn: DBConnection, item: {{ meta.tableProperties.tableName }}): Promise<void>;
 
 
     /**
@@ -30,12 +29,12 @@ export default interface {{ meta.tableProperties.tableName }}DAO {
     {{/each}}Promise<void>;
 
 
-     /**
-     *
-     * @param conn
-     * @param item
-     */
-    update(conn: DBConnection, item: {{ meta.tableProperties.tableName }}): Promise<void>;
+        /**
+        *
+        * @param conn
+        * @param item
+        */
+        update(conn: DBConnection, item: {{ meta.tableProperties.tableName }}): Promise<void>;
 
 
             /**
@@ -44,20 +43,15 @@ export default interface {{ meta.tableProperties.tableName }}DAO {
             * @param id
             */
             {{#each meta.tableDefinition}}
-                {{#if @first}}
-                    find(conn: DBConnection, {{this.columnName }}: string):
-
-                {{/if}}
-            {{/each}}
-            Promise<{{ meta.tableProperties.tableName }}>;
+                {{#if @first}}find(conn: DBConnection, {{this.columnName }}: string):{{/if}} {{/each}}Promise<{{ meta.tableProperties.tableName }}>;
 
 
-    /**
-    *
-    * @param conn
-    * @param criteria
-    */
-    search(conn: DBConnection, criteria: any): Promise<PaginationList>;
+            /**
+            *
+            * @param conn
+            * @param criteria
+            */
+            search(conn: DBConnection, criteria: any): Promise<PaginationList>;
 
 
-}
+                }

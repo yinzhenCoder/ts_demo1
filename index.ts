@@ -8,8 +8,10 @@ import {getDatabase, Database} from './schema'
 import Options, {CAMELCASE_OPTIONS, OptionValues} from './options'
 import {processString, Options as ITFOptions} from 'typescript-formatter'
 import * as fs from "fs";
+const path = require('path');
 import {SchemaDefinition, TableDefinition} from "./schemaInterfaces";
 import {generateFiles} from "../ts_demo1/src/templateGenerator";
+import {camelCase, upperFirst} from "lodash";
 
 const pkgVersion = require('./package.json').version
 
@@ -59,7 +61,7 @@ function buildHeader(db: Database, tables: string[], schema: string | null, opti
 }
 
 export async function typescriptOfTable(db: Database | string,
-                                        outputPath: string,
+                                        directoryPaths: DirectoryPaths,
                                         table: string,
                                         schema: string,
                                         options = new Options(),
@@ -75,25 +77,19 @@ export async function typescriptOfTable(db: Database | string,
    // let interfaceFile = generateTableInterface(table, tableTypes, options);
     //自己的方法
     let myInterfaceFile = myGenerateTableInterface(table, tableTypes, options, schemaDefinition);
-    await generateInterfaceFile(outputPath, table, myInterfaceFile);
+    await generateInterfaceFile(directoryPaths.entitiesPath, table, myInterfaceFile);
 
 
 
-    await generateDao(table, tableTypes, options, schemaDefinition);
+    await generateDao(table, tableTypes, options, schemaDefinition,directoryPaths);
     interfaces += myInterfaceFile;
     return myInterfaceFile;
 }
-async function generateDao(table: string, tableTypes: TableDefinition, options: Options, schemaDefinition: SchemaDefinition) {
-        schemaDefinition[table].tableDefinition = tableTypes;
-        console.log("================打印数据实体=============")
-        console.log(JSON.stringify(schemaDefinition[table]));
-    generateFiles(schemaDefinition,table,"aaa")
-
-
-
-
+async function generateDao(table: string, tableTypes: TableDefinition, options: Options, schemaDefinition: SchemaDefinition, directoryPaths: DirectoryPaths) {
+    schemaDefinition[table].tableDefinition = tableTypes;
+    await generateFiles(schemaDefinition,table,directoryPaths);
 }
-async function generateInterfaceFile(outputPath: string, tableName: string, interfaceString: string) {
+async function generateInterfaceFile( entitiesPath: string, tableName: string, interfaceString: string) {
     function convertToCamelCase(name: string): string {
         return name.replace(/_([a-z])/g, (match, char) => char.toUpperCase());
     }
@@ -118,8 +114,7 @@ async function generateInterfaceFile(outputPath: string, tableName: string, inte
     }
 
 
-    const camelCaseName = convertToCamelCase(tableName);
-    const fileName = `${camelCaseName}.ts`;
+    const fileName = `${upperFirst(camelCase(tableName))}.ts`;
     interfaceString = await formatter(fileName, interfaceString);
     // console.log( `
     //     /**
@@ -131,35 +126,18 @@ async function generateInterfaceFile(outputPath: string, tableName: string, inte
     //      */
     //
     // `)
-    const path = require('path');
-
-    // 获取当前执行脚本的目录作为项目根目录
-    const rootPath = path.resolve(__dirname);
-    console.log("==============rootPath=============\n" + rootPath);
-    console.log("=====================================")
-    // 将outputPath转换为正常的包目录结构
-    const outputPathParts = outputPath.split('.');
-    const normalizedOutputPath = outputPathParts.join(path.sep);
-    const fullOutputPath = path.join(rootPath, normalizedOutputPath);
-    console.log("==========fullOutputPath===========\n" + fullOutputPath);
-    console.log("=====================================\n");
 
     // 检查目录是否存在，如果不存在则创建
-    if (!fs.existsSync(fullOutputPath)) {
-        fs.mkdirSync(fullOutputPath, {recursive: true});
-        console.log("Directory created: \n" + fullOutputPath+"\n");
-    } else {
-        console.log("Directory already exists: \n" + fullOutputPath+"\n");
+    if (fs.existsSync(entitiesPath)) {
+        console.log("Directory already exists: \n" + entitiesPath+"\n");
     }
 
     // 使用修改后的完整输出路径保存文件
-    fs.writeFileSync(path.join(fullOutputPath, fileName), interfaceString);
-    console.log("File saved successfully at: \n" + path.join(fullOutputPath, fileName)+"\n");
-
+    fs.writeFileSync(path.join(entitiesPath,fileName), interfaceString);
+    console.log("File saved successfully at: \n" + path.join(entitiesPath, fileName)+"\n");
 
     //fs.writeFileSync(fileName, interfaceString);
     console.log(`Interface file for table ${tableName} generated and saved to ${fileName}`+"\n");
-
 
     //生成DAO Service Controller 代码
 
@@ -186,11 +164,15 @@ export async function typescriptOfSchema(db: Database | string,
         tables = await db.getSchemaTables(schema)
     }
 
+    //创建包目录
+    let pathList = createDirectories(outputPath);
+
+
     const optionsObject = new Options(options)
 
     const enumTypes = generateEnumType(await db.getEnumTypes(schema), optionsObject)
     const schemaDefinition = await db.myGetTableComments(tables, schema)
-    const interfacePromises = tables.map((table) => typescriptOfTable(db, outputPath, table, schema as string, optionsObject, schemaDefinition))
+    const interfacePromises = tables.map((table) => typescriptOfTable(db, pathList, table, schema as string, optionsObject, schemaDefinition))
     const interfaces = await Promise.all(interfacePromises)
         .then(tsOfTable => tsOfTable.join(''))
     let output = '/* tslint:disable */\n\n'
@@ -219,5 +201,24 @@ export async function typescriptOfSchema(db: Database | string,
    // return output;
 }
 
+export interface DirectoryPaths {
+    entitiesPath: string;
+    daoPath: string;
+    daoImplPath: string;
+}
+const createDirectories = (outputPath:string): DirectoryPaths => {
+    const srcPath = path.join(__dirname, outputPath);
+    const entitiesPath = path.join(srcPath, 'entities');
+    const daoPath = path.join(srcPath, 'dao');
+    const daoImplPath = path.join(daoPath, 'impl');
+
+    [srcPath, entitiesPath, daoPath, daoImplPath].forEach(directory => {
+        if (!fs.existsSync(directory)) {
+            fs.mkdirSync(directory);
+        }
+    });
+
+    return { entitiesPath, daoPath, daoImplPath };
+};
 export {Database, getDatabase} from './schema'
 export {Options, OptionValues}

@@ -88,13 +88,13 @@ async createNew(conn: DBConnection, item: {{ meta.tableProperties.tableName }}):
     {{/each}}
 
 
-        async update(conn: DBConnection, item: {{ meta.tableProperties.tableName }}): Promise<void> {
-            await conn.executeUpdate(SQL_UPDATE, [
-            {{#each meta.tableDefinition}}
-                item.{{this.columnName}}{{#unless @last}}, {{/unless}}
-            {{/each}}
-            ]);
-            }
+    async update(conn: DBConnection, item: {{ meta.tableProperties.tableName }}): Promise<void> {
+        await conn.executeUpdate(SQL_UPDATE, [
+        {{#each meta.tableDefinition}}
+            item.{{this.columnName}}{{#unless @last}}, {{/unless}}
+        {{/each}}
+        ]);
+        }
 
 
 
@@ -104,9 +104,7 @@ async createNew(conn: DBConnection, item: {{ meta.tableProperties.tableName }}):
             {{#if @first}}
                 async find(conn: DBConnection, {{this.columnName }}: string):
             {{/if}}
-        {{/each}}
-        Promise<{{getGlobalVar "tableName" }}> {
-        return await conn.find(SQL_FIND, [
+        {{/each}}Promise<{{getGlobalVar "tableName" }}> { return await conn.find(SQL_FIND, [
         {{#each meta.tableDefinition}}
             {{#if @first}}
                 {{this.columnName }}
@@ -115,9 +113,9 @@ async createNew(conn: DBConnection, item: {{ meta.tableProperties.tableName }}):
         ]);
         }
 
-        async search(conn: DBConnection, criteria: any): Promise<PaginationList>
-            {
-            return Promise.resolve(undefined); }
-
-
+    async search(conn: DBConnection, criteria: any): Promise<PaginationList>{
+       return Promise.resolve(undefined);
             }
+
+
+}

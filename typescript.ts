@@ -61,7 +61,7 @@ export function myGenerateTableInterface (tableNameRaw: string, tableDefinition:
     * ${schemaDefinition[tableNameRaw].tableProperties.tableComment}
     */`
     return `${tableComment}
-        export default interface ${normalizeName(tableName, options)} {
+        export default interface ${schemaDefinition[tableNameRaw].tableProperties.tableName} {
         ${members}
         }`
 }

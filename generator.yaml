@@ -4,11 +4,14 @@ postgres:
   database: dev_db_aoss
   password: pwd4devuser
   port: 2345
-  outputPath: flexForm.entities
-  tables:
+
+output:
+  srcPath: com.anmed.jjld
+
+
+tables:
     - fdm_card
-#    - fdm_card_content
-#    - fdm_data_form
-#    - fdm_data_form_content
-#    - fdm_form_category
-#    - fdm_form
+    - fdm_card_content
+    - fdm_data_form
+    - fdm_data_form_content
+    - fdm_form_category

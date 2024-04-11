@@ -2,7 +2,7 @@
 * daoTemplate.hbs
 */
 {{log meta}}
-import Patient from "../entities/{{ meta.tableProperties.tableName }}";
+import {{ meta.tableProperties.tableName }} from "../entities/{{ meta.tableProperties.tableName }}";
 import {DBConnection,PaginationList} from "@ticatec/node-common-library";
 
 export default interface {{ meta.tableProperties.tableName }}DAO {

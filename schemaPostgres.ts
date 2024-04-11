@@ -154,7 +154,7 @@ export class PostgresDatabase implements Database {
             [tableName, tableSchema],
             (schemaItem: T) => {
                 tableDefinition[schemaItem.column_name] = {
-                    columnName:upperFirst(camelCase(schemaItem.column_name)),
+                    columnName:camelCase(schemaItem.column_name),
                     columnRawName:schemaItem.column_name,
                     udtName: schemaItem.udt_name,
                     nullable: schemaItem.is_nullable === 'YES',
