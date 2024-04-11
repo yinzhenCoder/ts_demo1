@@ -6,8 +6,8 @@ postgres:
   port: 2345
 
 output:
-  srcPath: com.anmed.jjld
-
+  orgPath: com.anmed.jjld
+  path: D:\Desktop\代码生成器
 
 tables:
     - fdm_card

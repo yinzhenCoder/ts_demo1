@@ -13,12 +13,11 @@ const { user, host, database, password, port } = config.postgres;
 const dbConnectionString = `postgres://${user}:${password}@${host}:${port}/${database}`;
 
 // 获取输出路径
-const outputPath = config.output.srcPath;
-
+const {orgPath,path} = config.output;
 // 获取表列表
 const tables = config.tables;
 // 调用 typescriptOfSchema 函数生成接口文件
-typescriptOfSchema(dbConnectionString, tables, outputPath)
+typescriptOfSchema(dbConnectionString, tables, orgPath,path)
     .then((result) => {
         console.log(result);
         console.log("Interface file generated successfully");

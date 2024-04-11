@@ -147,7 +147,8 @@ async function generateInterfaceFile( entitiesPath: string, tableName: string, i
 
 export async function typescriptOfSchema(db: Database | string,
                                          tables: string[] = [],
-                                         outputPath: string,
+                                         orgPath: string,
+                                         outputPath:string,
                                          schema: string | null = null,
                                          options: OptionValues = CAMELCASE_OPTIONS
                                          //options: OptionValues = {}
@@ -165,7 +166,7 @@ export async function typescriptOfSchema(db: Database | string,
     }
 
     //创建包目录
-    let pathList = createDirectories(outputPath);
+    let pathList = createDirectories(orgPath,outputPath);
 
 
     const optionsObject = new Options(options)
@@ -206,19 +207,40 @@ export interface DirectoryPaths {
     daoPath: string;
     daoImplPath: string;
 }
-const createDirectories = (outputPath:string): DirectoryPaths => {
-    const srcPath = path.join(__dirname, outputPath);
+const createDirectories = (orgPath:string,outputPath?:string): DirectoryPaths => {
+    let rootPath = outputPath || __dirname;
+    // 将orgPath转换为正常的包目录结构
+    let normalizedOutputPath = orgPath.replace(/\./g, path.sep);
+    const srcPath = path.join(rootPath, normalizedOutputPath);
+
     const entitiesPath = path.join(srcPath, 'entities');
     const daoPath = path.join(srcPath, 'dao');
     const daoImplPath = path.join(daoPath, 'impl');
+     logSrc("srcPath",srcPath);
+     logSrc("entitiesPath",entitiesPath);
+     logSrc("daoPath",daoPath);
+     logSrc("daoImplPath",daoImplPath);
 
-    [srcPath, entitiesPath, daoPath, daoImplPath].forEach(directory => {
+    // 创建根目录
+    if (!fs.existsSync(srcPath)) {
+        fs.mkdirSync(srcPath, { recursive: true });
+    }
+
+    // 创建子目录
+    [entitiesPath, daoPath, daoImplPath].forEach(function(directory) {
         if (!fs.existsSync(directory)) {
             fs.mkdirSync(directory);
         }
     });
 
+
     return { entitiesPath, daoPath, daoImplPath };
 };
+
+function logSrc(key:string,value:string) {
+    console.log(`===========${key}===========`);
+    console.log(value);
+    console.log("=============================");
+}
 export {Database, getDatabase} from './schema'
 export {Options, OptionValues}
