@@ -4,7 +4,7 @@ import { typescriptOfSchema } from './index';
 import Options, {CAMELCASE_OPTIONS} from "./options"; // 导入生成接口文件的函数
 
 // 读取 generator.yaml 配置文件
-const configPath = 'generator.yaml';
+const configPath = 'generator-local.yaml';
 const config:any = yaml.load(fs.readFileSync(configPath, 'utf8'));
 
 

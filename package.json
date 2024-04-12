@@ -10,7 +10,7 @@
     "restart": "node ./dist/app",
     "clean": "rm -rf ./dist",
     "windows_clean": "rmdir /s /q dist",
-    "generate-interfaces": "tsc generateInterfacesFromConfig.ts && node generateInterfacesFromConfig.js"
+    "generate-interfaces": "tsc generateInterfacesFromConfig.ts && tsc ../ts_demo1/src/templateGenerator.ts && node generateInterfacesFromConfig.js"
   },
   "bin": {
     "schemats": "bin/schemats.js"

@@ -23,7 +23,8 @@ Handlebars.registerHelper('inc', function(value) {
 // 编译模板
 function compileTemplate(meta:any,table:string, templatePath:string) {
     // 读取模板文件
-    const templateSource = fs.readFileSync(templatePath, 'utf8');
+    const templatePathJoin = path.join(__dirname, 'templates', templatePath);
+    const templateSource = fs.readFileSync(templatePathJoin, 'utf8');
     const template = Handlebars.compile(templateSource);
 
     // 填充模板
@@ -61,13 +62,13 @@ export async function generateFiles(meta: SchemaDefinition, table: string, direc
 
 
     // 生成 DAO 文件
-    const daoCode = compileTemplate(meta,table, '../templates/daoTemplate.hbs');
+    const daoCode = compileTemplate(meta,table, 'daoTemplate.hbs');
     let formatterDao = await formatter(`${tableName}DAO.ts`,daoCode);
     fs.writeFileSync(path.join(directoryPaths.daoPath, `${tableName}DAO.ts`), formatterDao);
     console.log("File saved successfully at: \n" + path.join(directoryPaths.daoPath, `${tableName}DAO.ts`) + "\n");
 
     // 生成 DAO Impl 文件
-    const daoImplCode = compileTemplate(meta,table, '../templates/daoImplTemplate.hbs');
+    const daoImplCode = compileTemplate(meta,table, 'daoImplTemplate.hbs');
     let formatterDaoImpl = await formatter(`${tableName}DAOImpl.ts`,daoImplCode);
     fs.writeFileSync(path.join(directoryPaths.daoImplPath, `${tableName}DAOImpl.ts`), formatterDaoImpl);
     console.log("File saved successfully at: \n" + path.join(directoryPaths.daoImplPath, `${tableName}DAOImpl.ts`) + "\n");
