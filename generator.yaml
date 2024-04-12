@@ -1,17 +1,18 @@
+# PostgreSQL 数据库连接信息
 postgres:
-  user: 
-  host: 
-  database: 
-  password: 
-  port: 2345
+  user: # 数据库用户名
+  host: # 数据库主机地址
+  database: # 数据库名称
+  password: # 数据库密码
+  port: # 数据库端口号
 
+# 输出配置
 output:
-  orgPath: com.anmed.jjld
-  path: D:\Desktop\代码生成器
+  orgPath: # 组织路径，用于生成代码的组织目录
+  path: # 输出路径，指定生成的代码存储位置
 
+# 待处理表格
 tables:
-    - fdm_card
-    - fdm_card_content
-    - fdm_data_form
-    - fdm_data_form_content
-    - fdm_form_category
+# 在这里添加需要处理的表格，取消注释并填写表格名称
+# - table1
+# - table2

@@ -1,0 +1,14 @@
+postgres:
+  user: root
+  host: 127.0.0.1
+  database: test_database
+  password: 123456
+  port: 5432
+
+output:
+  orgPath: com.qs.example
+  path: C:\Desktop\code-generator
+
+tables:
+  - t_person
+  - t_user
