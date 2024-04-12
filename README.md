@@ -109,8 +109,8 @@ export default interface TUser {
 
 
 ```
-## 使用说明：TS代码生成器
-
+# 扩展： TS代码生成器
+目前只支持DAO、DAOImpl
 ### 1. 安装依赖
 
 确保项目已经安装了相关依赖，包括但不限于以下内容：
@@ -143,10 +143,10 @@ tables:
 ### 3. 生成接口
 
 
-运行以下命令生成 DAO以及 实现类：
+运行以下命令生成 DAO以及实现类：
 
 ```bash
-npm run npm run generate-interfaces
+npm run generate-interfaces
 ```
 
 #### 3.3 生成其他接口
@@ -163,16 +163,6 @@ npm run npm run generate-interfaces
 
 在项目中引入生成的接口文件，即可在代码中使用生成的接口定义。
 
-```ts
-import TUser from './path/to/generated/interfaces/TUser';
-
-// 使用生成的接口定义
-const user: TUser = {
-    id: '123',
-    name: 'John Doe',
-    phone: 1234567890,
-};
-```
 
 ### 注意事项
 
@@ -183,7 +173,7 @@ const user: TUser = {
 以上是使用 TS 代码生成器的简要说明，核心是修改配置文件后执行相应的脚本即可生成所需的接口文件。
 
 
-参考项目：
-- schemats
+### 参考项目：
+
   [schemats]:https://www.npmjs.com/package/@tgriesser/schemats
 
